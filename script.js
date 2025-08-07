@@ -1,6 +1,6 @@
 // ========== GITHUB ==========
 function github(){
-  window.location.href = "https://github.com/RossBarrettGit";
+  window.open("https://github.com/RossBarrettGit", "_blank");
 }
 
 // ========== BURGER MENU ==========
