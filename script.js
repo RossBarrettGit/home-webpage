@@ -52,7 +52,7 @@ class Dot {
   constructor() {
     this.spawnRandom();
     this.radius = Math.random() * 2 + 1;
-    this.maxLife = 6000; // frames before respawn (~10 seconds at 60fps)
+    this.maxLife = 1000; // frames before respawn (~10 seconds at 60fps)
     this.life = Math.floor(Math.random() * this.maxLife); // random start life for staggered respawn
   }
 
