@@ -6,14 +6,10 @@ function github() {
 // ========== BURGER MENU ==========
 function toggleSidebar() {
   const sidebar = document.getElementById("sidebar");
-  if (sidebar.style.left === "0px") {
-    sidebar.style.left = "-200px";
-  } else {
-    sidebar.style.left = "0px";
-  }
+  sidebar.style.left = sidebar.style.left === "0px" ? "-200px" : "0px";
 }
 
-// ========== FLOATING DOT NETWORK + MOUSE/TOUCH REPULSION WITH RECOVERY ==========
+// ========== FLOATING DOT NETWORK + MOUSE/TOUCH REPULSION ==========
 const canvas = document.getElementById("floating-lines");
 const ctx = canvas.getContext("2d");
 
@@ -27,38 +23,34 @@ window.addEventListener("resize", () => {
   height = canvas.height = window.innerHeight;
 });
 
-// Track pointer (mouse or touch)
-const pointer = {
-  x: null,
-  y: null,
-  radius: 100
-};
+// Pointer tracking (mouse or touch)
+const pointer = { x: null, y: null, radius: 100 };
 
-window.addEventListener("mousemove", (e) => {
+// Mouse
+window.addEventListener("mousemove", e => {
   pointer.x = e.clientX;
   pointer.y = e.clientY;
 });
-
 window.addEventListener("mouseout", () => {
   pointer.x = null;
-  pointer.y = null;
 });
 
-window.addEventListener("touchstart", (e) => {
+// Touch
+window.addEventListener("touchstart", e => {
   pointer.x = e.touches[0].clientX;
   pointer.y = e.touches[0].clientY;
 }, { passive: true });
 
-window.addEventListener("touchmove", (e) => {
+window.addEventListener("touchmove", e => {
   pointer.x = e.touches[0].clientX;
   pointer.y = e.touches[0].clientY;
 }, { passive: true });
 
 window.addEventListener("touchend", () => {
   pointer.x = null;
-  pointer.y = null;
 });
 
+// Dots
 const numDots = 100;
 const maxDistance = 120;
 const dots = [];
@@ -87,6 +79,7 @@ class Dot {
       this.life = 0;
     }
 
+    // Repulsion from pointer
     if (pointer.x !== null && pointer.y !== null) {
       const dx = this.x - pointer.x;
       const dy = this.y - pointer.y;
@@ -96,12 +89,12 @@ class Dot {
         const angle = Math.atan2(dy, dx);
         const force = (pointer.radius - dist) / pointer.radius;
         const repelStrength = 2;
-
         this.vx += Math.cos(angle) * force * repelStrength;
         this.vy += Math.sin(angle) * force * repelStrength;
       }
     }
 
+    // Recover base velocity
     const recoverySpeed = 0.01;
     this.vx += (this.baseVx - this.vx) * recoverySpeed;
     this.vy += (this.baseVy - this.vy) * recoverySpeed;
@@ -109,6 +102,7 @@ class Dot {
     this.x += this.vx;
     this.y += this.vy;
 
+    // Bounce off edges
     if (this.x <= 0 || this.x >= width) this.vx *= -1;
     if (this.y <= 0 || this.y >= height) this.vy *= -1;
   }
@@ -121,10 +115,12 @@ class Dot {
   }
 }
 
+// Initialize dots
 for (let i = 0; i < numDots; i++) {
   dots.push(new Dot());
 }
 
+// Draw connecting lines
 function connectDots() {
   for (let i = 0; i < dots.length; i++) {
     for (let j = i + 1; j < dots.length; j++) {
@@ -133,7 +129,7 @@ function connectDots() {
       const distance = Math.sqrt(dx * dx + dy * dy);
 
       if (distance < maxDistance) {
-        ctx.strokeStyle = "rgba(255, 95, 31," + (1 - distance / maxDistance) + ")";
+        ctx.strokeStyle = `rgba(255,95,31,${1 - distance / maxDistance})`;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(dots[i].x, dots[i].y);
@@ -144,6 +140,7 @@ function connectDots() {
   }
 }
 
+// Animation loop
 function animate() {
   ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
   ctx.fillRect(0, 0, width, height);
