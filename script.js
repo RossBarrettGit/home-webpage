@@ -1,5 +1,5 @@
 // ========== GITHUB ==========
-function github(){
+function github() {
   window.open("https://github.com/RossBarrettGit", "_blank");
 }
 
@@ -13,64 +13,53 @@ function toggleSidebar() {
   }
 }
 
-// ========== FLOATING DOT NETWORK + MOUSE/TAP REPULSION WITH RECOVERY ==========
+// ========== FLOATING DOT NETWORK + MOUSE/TOUCH REPULSION WITH RECOVERY ==========
 const canvas = document.getElementById("floating-lines");
 const ctx = canvas.getContext("2d");
 
 let width = window.innerWidth;
 let height = window.innerHeight;
+canvas.width = width;
+canvas.height = height;
 
-// ===== Handle retina scaling for crispness =====
-function resizeCanvas() {
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
-  ctx.setTransform(1, 0, 0, 1, 0, 0); // reset transform
-  ctx.scale(dpr, dpr);
+window.addEventListener("resize", () => {
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+});
 
-  width = window.innerWidth;
-  height = window.innerHeight;
-}
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
-
-// Interaction object (mouse OR touch)
-const mouse = {
+// Track pointer (mouse or touch)
+const pointer = {
   x: null,
   y: null,
-  radius: /Mobi|Android/i.test(navigator.userAgent) ? 150 : 100 // bigger radius on mobile
+  radius: 100
 };
 
-// ===== Desktop mouse events =====
 window.addEventListener("mousemove", (e) => {
-  mouse.x = e.clientX;
-  mouse.y = e.clientY;
+  pointer.x = e.clientX;
+  pointer.y = e.clientY;
 });
 
 window.addEventListener("mouseout", () => {
-  mouse.x = null;
-  mouse.y = null;
+  pointer.x = null;
+  pointer.y = null;
 });
 
-// ===== Mobile touch events =====
-canvas.addEventListener("touchstart", (e) => {
-  mouse.x = e.touches[0].clientX;
-  mouse.y = e.touches[0].clientY;
-}, { passive: false });
+window.addEventListener("touchstart", (e) => {
+  pointer.x = e.touches[0].clientX;
+  pointer.y = e.touches[0].clientY;
+}, { passive: true });
 
-canvas.addEventListener("touchmove", (e) => {
-  e.preventDefault(); // prevent page scroll
-  mouse.x = e.touches[0].clientX;
-  mouse.y = e.touches[0].clientY;
-}, { passive: false });
+window.addEventListener("touchmove", (e) => {
+  pointer.x = e.touches[0].clientX;
+  pointer.y = e.touches[0].clientY;
+}, { passive: true });
 
-canvas.addEventListener("touchend", () => {
-  mouse.x = null;
-  mouse.y = null;
+window.addEventListener("touchend", () => {
+  pointer.x = null;
+  pointer.y = null;
 });
 
-// Fewer dots on small screens
-let numDots = window.innerWidth < 600 ? 60 : 100;
+const numDots = 100;
 const maxDistance = 120;
 const dots = [];
 
@@ -78,39 +67,34 @@ class Dot {
   constructor() {
     this.spawnRandom();
     this.radius = Math.random() * 2 + 1;
-    this.maxLife = 1000; // frames before respawn (~10 seconds at 60fps)
-    this.life = Math.floor(Math.random() * this.maxLife); // random start life for staggered respawn
+    this.maxLife = 1000;
+    this.life = Math.floor(Math.random() * this.maxLife);
   }
 
   spawnRandom() {
     this.x = Math.random() * width;
     this.y = Math.random() * height;
-
     this.vx = (Math.random() - 0.5) * 0.8;
     this.vy = (Math.random() - 0.5) * 0.8;
-
     this.baseVx = this.vx;
     this.baseVy = this.vy;
   }
 
   move() {
     this.life++;
-
-    // Respawn if life exceeded
     if (this.life > this.maxLife) {
       this.spawnRandom();
       this.life = 0;
     }
 
-    // Repulsion
-    if (mouse.x !== null && mouse.y !== null) {
-      const dx = this.x - mouse.x;
-      const dy = this.y - mouse.y;
+    if (pointer.x !== null && pointer.y !== null) {
+      const dx = this.x - pointer.x;
+      const dy = this.y - pointer.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist < mouse.radius) {
+      if (dist < pointer.radius) {
         const angle = Math.atan2(dy, dx);
-        const force = (mouse.radius - dist) / mouse.radius;
+        const force = (pointer.radius - dist) / pointer.radius;
         const repelStrength = 2;
 
         this.vx += Math.cos(angle) * force * repelStrength;
@@ -118,7 +102,6 @@ class Dot {
       }
     }
 
-    // Gradually return to base velocity
     const recoverySpeed = 0.01;
     this.vx += (this.baseVx - this.vx) * recoverySpeed;
     this.vy += (this.baseVy - this.vy) * recoverySpeed;
@@ -126,7 +109,6 @@ class Dot {
     this.x += this.vx;
     this.y += this.vy;
 
-    // Bounce off edges
     if (this.x <= 0 || this.x >= width) this.vx *= -1;
     if (this.y <= 0 || this.y >= height) this.vy *= -1;
   }
@@ -139,7 +121,6 @@ class Dot {
   }
 }
 
-// Initialize dots
 for (let i = 0; i < numDots; i++) {
   dots.push(new Dot());
 }
