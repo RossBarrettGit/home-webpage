@@ -13,27 +13,35 @@ function toggleSidebar() {
   }
 }
 
-// ========== FLOATING DOT NETWORK + MOUSE REPULSION WITH RECOVERY ==========
+// ========== FLOATING DOT NETWORK + MOUSE/TAP REPULSION WITH RECOVERY ==========
 const canvas = document.getElementById("floating-lines");
 const ctx = canvas.getContext("2d");
 
 let width = window.innerWidth;
 let height = window.innerHeight;
-canvas.width = width;
-canvas.height = height;
 
-window.addEventListener("resize", () => {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
-});
+// ===== Handle retina scaling for crispness =====
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // reset transform
+  ctx.scale(dpr, dpr);
 
-// Mouse tracking
+  width = window.innerWidth;
+  height = window.innerHeight;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+// Interaction object (mouse OR touch)
 const mouse = {
   x: null,
   y: null,
-  radius: 100
+  radius: /Mobi|Android/i.test(navigator.userAgent) ? 150 : 100 // bigger radius on mobile
 };
 
+// ===== Desktop mouse events =====
 window.addEventListener("mousemove", (e) => {
   mouse.x = e.clientX;
   mouse.y = e.clientY;
@@ -44,7 +52,25 @@ window.addEventListener("mouseout", () => {
   mouse.y = null;
 });
 
-const numDots = 100;
+// ===== Mobile touch events =====
+canvas.addEventListener("touchstart", (e) => {
+  mouse.x = e.touches[0].clientX;
+  mouse.y = e.touches[0].clientY;
+}, { passive: false });
+
+canvas.addEventListener("touchmove", (e) => {
+  e.preventDefault(); // prevent page scroll
+  mouse.x = e.touches[0].clientX;
+  mouse.y = e.touches[0].clientY;
+}, { passive: false });
+
+canvas.addEventListener("touchend", () => {
+  mouse.x = null;
+  mouse.y = null;
+});
+
+// Fewer dots on small screens
+let numDots = window.innerWidth < 600 ? 60 : 100;
 const maxDistance = 120;
 const dots = [];
 
