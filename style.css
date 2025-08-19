@@ -34,7 +34,7 @@ body {
     left: -200px;
     width: 200px;
     height: 100%;
-    background: linear-gradient(135deg, #ff662a, #ffffff); /* gradient */
+    background: linear-gradient(135deg, #ff662a, #ffd7c7); /* gradient */
     padding-top: 60px;
     transition: 0.3s;
     z-index: 3;
@@ -43,7 +43,7 @@ body {
   
   .sidebar a {
     display: block;
-    color: #ffffff;
+    color: #000;
     padding: 16px;
     text-decoration: none;
     font-size: 18px;
@@ -52,7 +52,7 @@ body {
   }
   
   .sidebar a:hover {
-    background-color: #fff;
+    background-color: #ff986f;
     color: #000;
   }
   
